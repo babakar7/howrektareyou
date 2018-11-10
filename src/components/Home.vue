@@ -78,22 +78,30 @@ LTC
 </div>
 </div>
 
-
 </div>
 
 
 
 <div class="card text-center" v-show="assetSelected && timeframeselected">
 <div class="card-header">
-  Comparing BTC vs {{assetSelected}} over the last {{timeframeselected}}  {{timeframeselected == 1 ? 'month' : 'months'}}
+  Comparing      <img  class="ticker" src="@/assets/images/tickers/btc.png" />
+
+
+
+
+ VS    <img  class="ticker" v-bind:src="displayTicker" />over the last {{timeframeselected}}  {{timeframeselected == 1 ? 'month' : 'months'}}
 </div>
 <div class="card-body">
 
   <div class="container">
     <div class="row">
       <div class="col">
-          <span> BTC </span>
-          <p>{{valueObject.btc | dec}} %</p>
+
+          <p>  <img  class="ticker" src="@/assets/images/tickers/btc.png" /> </p>
+
+          <span>{{valueObject.btc | dec}} %  </span>
+          <img class="arrow" v-bind:src="displayArrow('BTC')"/>
+
       </div>
       <div class="col">
           <span> REKT LEVEL </span>
@@ -106,9 +114,11 @@ LTC
 </div>
       </div>
       <div class="col">
-        <span> {{assetSelected}} </span>
 
-      <p>  {{valueObject.asset | dec}} %  </p>
+        <p>  <img  class="ticker" v-bind:src="displayTicker" /> </p>
+
+      <span>  {{valueObject.asset | dec}} %  </span>
+      <img class="arrow" v-bind:src="displayArrow(assetSelected?assetSelected:'ETH')"/>
 
       </div>
     </div>
@@ -148,14 +158,46 @@ export default {
       btcPrice:null,
       assetSelected:null,
       timeframeselected:null,
-      assetSelectedPrice:{"BTC":{0:6000, 1:7000, 3:7000, 6: 15000},
-                "ETH":{0:500, 1:400, 3:700, 6: 600},
-              "EOS":{0:10, 1:30, 3:50, 6: 100},
-            "LTC":{0:100, 1:300, 3:250, 6: 500}},
+
+
+      assetSelectedPrice:{},
+
+
       assets: ["BTC", "ETH", "EOS", "LTC"],
       timeFrames: [0, 1, 3, 6],
       percentages:null
     }
+
+  },
+
+
+  methods:{
+
+
+    displayArrow(asset){
+
+      // handle case where it is 0
+      if(this.percentages[asset][this.timeframeselected]>0  ){
+        return require('../assets/images/greenup.png')
+
+
+      }else{
+
+        return require('../assets/images/redown.jpeg')
+
+      }
+
+
+
+    //  return require('../assets/images/greenup.png')
+  /*
+      if(this.percentages[this.timeframeselected] > 0 ){
+      } else {
+        return "@/assets/images/redonw.jpeg"
+      }*/
+
+    },
+
 
   },
 
@@ -166,8 +208,20 @@ export default {
       },
 
 
-      valueObject(){
+          displayTicker(){
 
+              if(this.assetSelected){
+                return require(`../assets/images/tickers/${this.assetSelected.toLowerCase()}.png`)
+
+              } else {
+                return ""
+              }
+
+
+          },
+
+
+      valueObject(){
 
 
            if(this.assetSelected !== null){
@@ -248,7 +302,7 @@ export default {
 
 
 
-/*
+
     let apiKey = "748CCD92-12DC-4CAA-92FB-20D0B1BC050E"
 
     let endpoint = "https://rest.coinapi.io/"
@@ -289,7 +343,7 @@ export default {
 
       })
 
-    })   */
+    })
 
 
 
@@ -348,6 +402,19 @@ export default {
   padding-top:50px;
   margin-bottom:30px;
 
+}
+
+.arrow{
+
+  height:45px;
+  width:35px;
+  margin-left:5px;
+
+}
+
+.ticker{
+  height:50px;
+  width:50px;
 }
 
 
