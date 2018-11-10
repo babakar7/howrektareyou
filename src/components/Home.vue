@@ -81,15 +81,31 @@ LTC
 </div>
 
 
+<transition name="fade" mode="out-in">
 
 <div class="card text-center" v-show="assetSelected && timeframeselected">
+
+
 <div class="card-header">
-  Comparing      <img  class="ticker" src="@/assets/images/tickers/btc.png" />
+  Comparing
+
+  <img  class="ticker" src="@/assets/images/tickers/btc.png"  />
 
 
 
+ VS
 
- VS    <img  class="ticker" v-bind:src="displayTicker" />over the last {{timeframeselected}}  {{timeframeselected == 1 ? 'month' : 'months'}}
+ <transition name="fade" mode="out-in">
+
+
+ <img  class="ticker" v-bind:src="displayTicker" v-bind:key="assetSelected" />
+
+</transition>
+
+      over the last
+    {{timeframeselected}}  {{timeframeselected == 1 ? 'month' : 'months'}}
+
+
 </div>
 <div class="card-body">
 
@@ -99,11 +115,24 @@ LTC
 
           <p>  <img  class="ticker" src="@/assets/images/tickers/btc.png" /> </p>
 
-          <span>{{valueObject.btc | dec}} %  </span>
-          <img class="arrow" v-bind:src="displayArrow('BTC')"/>
+
+          <transition name="fade" mode="out-in">
+
+          <span v-bind:key="valueObject.btc" >{{valueObject.btc | dec}} %  </span>
+
+        </transition>
+
+        <transition name="fade" mode="out-in">
+
+          <img class="arrow" v-bind:src="displayArrow('BTC')" v-bind:key="valueObject.btc"/>
+
+
+        </transition >
+
 
       </div>
       <div class="col">
+        <!--
           <span> REKT LEVEL </span>
 
           <div class="progress vertical">
@@ -112,13 +141,41 @@ LTC
    aria-valuemax="100" v-bind:style="rektLevel">
  </div>
 </div>
+-->
+
+<transition name="fade" mode="out-in">
+
+
+<h3 v-bind:key="toWatchforOutcome">  {{outcomeMessage}} </h3>
+
+
+
+
+</transition>
       </div>
       <div class="col">
 
-        <p>  <img  class="ticker" v-bind:src="displayTicker" /> </p>
+        <p>
 
-      <span>  {{valueObject.asset | dec}} %  </span>
-      <img class="arrow" v-bind:src="displayArrow(assetSelected?assetSelected:'ETH')"/>
+          <transition name="fade" mode="out-in">
+
+           <img  class="ticker" v-bind:src="displayTicker"  v-bind:key="assetSelected"/>
+
+         </transition>
+          </p>
+
+          <transition name="fade" mode="out-in">
+
+      <span v-bind:key="valueObject.asset">  {{valueObject.asset | dec}} %  </span>
+
+    </transition>
+
+
+    <transition name="fade" mode="out-in">
+
+      <img v-bind:key="valueObject.asset" class="arrow" v-bind:src="displayArrow(assetSelected?assetSelected:'ETH')"/>
+
+    </transition>
 
       </div>
     </div>
@@ -129,6 +186,8 @@ LTC
 Still a multicoiner?  <a href="https://nakamotoinstitute.org/mempool/" target="_blank">Get help here</a>
 </div>
 </div>
+
+</transition>
 
 <div v-show="assetSelected && timeframeselected">
   <span> How was this calulated? </span>
@@ -158,14 +217,14 @@ export default {
       btcPrice:null,
       assetSelected:null,
       timeframeselected:null,
-
-
-      assetSelectedPrice:{},
-
-
+      assetSelectedPrice:{"BTC":{0:6000, 1:5000, 3:7000, 6: 15000},
+                "ETH":{0:500, 1:400, 3:700, 6: 600},
+              "EOS":{0:10, 1:30, 3:50, 6: 100},
+            "LTC":{0:100, 1:300, 3:250, 6: 500}},
       assets: ["BTC", "ETH", "EOS", "LTC"],
       timeFrames: [0, 1, 3, 6],
-      percentages:null
+      percentages:null,
+      outcome: null
     }
 
   },
@@ -189,19 +248,44 @@ export default {
 
 
 
-    //  return require('../assets/images/greenup.png')
-  /*
-      if(this.percentages[this.timeframeselected] > 0 ){
-      } else {
-        return "@/assets/images/redonw.jpeg"
-      }*/
+
 
     },
 
 
   },
 
+
   computed:{
+
+
+    outcomeMessage(){
+
+
+
+
+        if(this.outcome > 0){
+
+
+
+          return `You would have gained  ${this.outcome} %  by holding BTC vs ${this.assetSelected} !`
+        } else if (this.outcome < 0){
+
+          return `You would have lost  ${-this.outcome} %  by holding BTC vs ${this.assetSelected}`
+
+        } else {
+          return `BTC & ${this.assetSelected} had the same performance as BTC`
+        }
+    },
+
+    toWatchforOutcome(){
+
+      // compound compouted property that allows watching when the user has entered all the info
+      // so we can then calculate the outcome
+      return this.assetSelected + this.timeframeselected
+
+    },
+
 
       timeRequested(){
         return  moment().subtract(this.timeframeselected, 'months').toISOString()
@@ -256,6 +340,21 @@ export default {
 
   },
 
+  watch:{
+
+      toWatchforOutcome(){
+
+        console.log('watch is called')
+
+        // check if user has seleted asset & timeframe
+
+          this.outcome = this.$options.filters.dec(this.percentages["BTC"][this.timeframeselected] - this.percentages[this.assetSelected][this.timeframeselected])
+
+
+
+      }
+  },
+
 
 
 
@@ -263,14 +362,20 @@ export default {
 
 
 
+    axios.get('https://howrektapi.herokuapp.com/',  { crossdomain: true })
+      .then((res)=>{
+          console.log(res)
+      })
+      .catch((err)=>{
+        console.log(err)
+      })
+
         var result = {}
 
 
           var pricesArr =  Object.values(this.assetSelectedPrice)
 
           var keyAssets = Object.keys(this.assetSelectedPrice)
-
-
 
             var asset;
 
@@ -299,72 +404,6 @@ export default {
 
             this.percentages = result
 
-
-
-
-
-    let apiKey = "748CCD92-12DC-4CAA-92FB-20D0B1BC050E"
-
-    let endpoint = "https://rest.coinapi.io/"
-
-    this.assets.forEach((asset, index, arr)=>{
-
-      this.assetSelectedPrice[asset] = {}
-
-
-      this.timeFrames.forEach((timeFrame, indexInn, arrInn)=>{
-
-        let timeFrameRequested = moment().subtract(timeFrame, 'months').toISOString()
-
-
-
-        axios({
-              url: `${endpoint}v1/exchangerate/${asset}/USD?time=${timeFrameRequested}`,
-                        method:'get',
-                        headers : {
-                            "X-CoinAPI-Key" : apiKey
-                        }
-                    })
-                    .then((response) => {
-
-
-
-                        this.assetSelectedPrice[asset][timeFrame] = response.data.rate
-
-
-
-
-                        })
-                    .catch(function(error) {
-                        console.log(error)
-                    });
-
-
-
-      })
-
-    })
-
-
-
-
-              /*   for (asset in this.assetSelectedPrice){
-
-                   result[asset] = {}
-
-                     for (timeframe in asset){
-
-                        result[asset][timeframe]  =   ((asset[0] - asset[timeframe]) / asset[timeframe])  *100
-
-                        console.log('INNER LOOP')
-                     }
-                 }
-
-                  console.log(result)*/
-
-
-/*
-        */
 
         }
 
@@ -415,6 +454,14 @@ export default {
 .ticker{
   height:50px;
   width:50px;
+}
+
+.fade-enter-active, .fade-leave-active{
+  transition: opacity 1s;
+}
+
+.fade-enter, .fade-leave-to{
+  opacity: 0;
 }
 
 
