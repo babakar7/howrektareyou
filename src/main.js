@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import {store} from './store/store.js'
 
 Vue.use(VueAxios, axios)
 
@@ -26,6 +27,7 @@ Vue.filter('dec', function (value) {
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

@@ -1,26 +1,11 @@
 <template>
-  <div>
+  <div >
 
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">How Rekt are you ? </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-          <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="#">About <span class="sr-only">(current)</span></a>
-            <a class="nav-item nav-link" href="#">Contact</a>
-            <a class="nav-item nav-link" href="#">Contribute</a>
-          </div>
-
-          <span class="navbar-text ml-auto mr-5">BTC: {{btcPrice | usd}}
-          </span>
-        </div>
-      </nav>
-
-      <div class="container mt-2">
+  <div class="container mt-2 main-bk" v-bind:class="[{blurclass : donationModal}]">
 
 
+
+<div id="header-img" >
 
 
   <div class="card text-center ">
@@ -29,6 +14,7 @@
   <p class="lead"> Compare your favorite coin's performance against BTC
   </p>
 
+</div>
 
 </div>
 
@@ -60,13 +46,14 @@ LTC
 
 <div class="dropdown drop-time-frame">
 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-{{  timeframeselected ?  'Last ' + timeframeselected + ' months' : 'Select Time Frame'}}
+{{  timeframeselected ?  'Last ' + timeframeselected +
+  (timeframeselected == 1 ? '  month' : ' months') : 'Select Time Frame'}}
 </button>
 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 <ul class="timeframe">
 
 <li v-on:click="timeframeselected = '1'">
-  Last 30 days
+  Last 1 month
 </li >
 <li v-on:click="timeframeselected = '3'">
   Last 3 months
@@ -98,7 +85,7 @@ LTC
  <transition name="fade" mode="out-in">
 
 
- <img  class="ticker" v-bind:src="displayTicker" v-bind:key="assetSelected" />
+ <img  class="ticker"  v-bind:src="displayTicker" v-bind:key="assetSelected" />
 
 </transition>
 
@@ -111,9 +98,12 @@ LTC
 
   <div class="container">
     <div class="row">
-      <div class="col">
 
-          <p>  <img  class="ticker" src="@/assets/images/tickers/btc.png" /> </p>
+  <!--    <div class="col  transition-background" v-bind:class="{btcresult : valueObject.btc > valueObject.asset}">-->
+
+      <div class="col transition-background" >
+
+          <p>  <img  class="ticker"   id="btc-ticker" src="@/assets/images/tickers/btc.png" /> </p>
 
 
           <transition name="fade" mode="out-in">
@@ -132,34 +122,34 @@ LTC
 
       </div>
       <div class="col">
-        <!--
-          <span> REKT LEVEL </span>
-
-          <div class="progress vertical">
-  <div class="progress-bar bg-danger progress-bar-info" role="progressbar"
-  aria-valuenow="90" aria-valuemin="0"
-   aria-valuemax="100" v-bind:style="rektLevel">
- </div>
-</div>
--->
 
 <transition name="fade" mode="out-in">
 
 
-<h3 v-bind:key="toWatchforOutcome">  {{outcomeMessage}} </h3>
-
-
+<h3 v-bind:key="toWatchforOutcome" id="outcomeMessage" v-html="outcomeMessage"
+    v-bind:class="{posoutcome : valueObject.btc > valueObject.asset,
+                    negoutcome: valueObject.btc < valueObject.asset }">  </h3>
 
 
 </transition>
+
+<p style="font-size:18px"> by hodling BTC </p>
+
+
+<transition name="fade" mode="out-in">
+
+<span v-bind:key="timeframeselected"> over the last {{timeframeselected}}  {{timeframeselected == 1 ? 'month' : 'months'}} </span>
+
+</transition>
+
       </div>
-      <div class="col">
+      <div class="col transition-background " >
 
         <p>
 
           <transition name="fade" mode="out-in">
 
-           <img  class="ticker" v-bind:src="displayTicker"  v-bind:key="assetSelected"/>
+           <img  class="ticker" v-bind:src="displayTicker" id="asset-ticker"  v-bind:key="assetSelected"/>
 
          </transition>
           </p>
@@ -190,13 +180,47 @@ Still a multicoiner?  <a href="https://nakamotoinstitute.org/mempool/" target="_
 </transition>
 
 <div v-show="assetSelected && timeframeselected">
-  <span> How was this calulated? </span>
+
+<p>Want to see more coins & features? Consider donating.  </p>
+<button class="btn btn-primary">  <span v-on:click="donationModal = !donationModal" style="cursor:pointer"> Donate </span> </button>
+
+
 
 </div>
 
+    </div>
 
+
+<transition name="fade" mode="out-in">
+
+    <div id="donation-modal" v-show="donationModal">
+
+    <p class="text-center">
+
+<button class="btn btn-success">  <a  id="donation-text" href="https://greenaddress.it/en/pay/GA3s4DMRQ5HM9VJbgeVZxqftjMqEEZ/" target="_blank" >
+Go to permanent donation URL</a>  </button>
+
+
+<p class="text-center">
+  Or scan the QR code below directly from your wallet
+</p>
+
+    </p>
+    <div class="text-center" id="qrcode">
+      <img src="@/assets/images/frame.png" />
 
     </div>
+
+
+    <button v-on:click="donationModal = false" class="btn btn-light text-center closeButton"> Close </button>
+
+
+  </div>
+
+</transition>
+
+
+
 
 
   </div>
@@ -207,6 +231,9 @@ Still a multicoiner?  <a href="https://nakamotoinstitute.org/mempool/" target="_
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import moment from 'moment'
+import {TweenMax} from "gsap/TweenMax";
+
+
 
 export default {
   name: 'Home',
@@ -217,21 +244,20 @@ export default {
       btcPrice:null,
       assetSelected:null,
       timeframeselected:null,
-      assetSelectedPrice:{"BTC":{0:6000, 1:5000, 3:7000, 6: 15000},
-                "ETH":{0:500, 1:400, 3:700, 6: 600},
-              "EOS":{0:10, 1:30, 3:50, 6: 100},
-            "LTC":{0:100, 1:300, 3:250, 6: 500}},
+      assetSelectedPrice:{},
       assets: ["BTC", "ETH", "EOS", "LTC"],
       timeFrames: [0, 1, 3, 6],
       percentages:null,
-      outcome: null
+      outcome: null,
+      donationModal: false,
+      backImg: "'../assets/images/btcwallpaper'"
+
     }
 
   },
 
 
   methods:{
-
 
     displayArrow(asset){
 
@@ -240,15 +266,14 @@ export default {
         return require('../assets/images/greenup.png')
 
 
-      }else{
+      }else if (this.percentages[asset][this.timeframeselected] < 0){
 
-        return require('../assets/images/redown.jpeg')
+        return require('../assets/images/redown.png')
 
+      } else {
+
+        return ''
       }
-
-
-
-
 
     },
 
@@ -259,22 +284,21 @@ export default {
   computed:{
 
 
+
     outcomeMessage(){
-
-
-
 
         if(this.outcome > 0){
 
+          return ` ${this.outcome} %  gain  <br />  `
 
-
-          return `You would have gained  ${this.outcome} %  by holding BTC vs ${this.assetSelected} !`
         } else if (this.outcome < 0){
 
-          return `You would have lost  ${-this.outcome} %  by holding BTC vs ${this.assetSelected}`
+          return `${-this.outcome} % loss <br /> `
 
+        } else if (this.outcome == 0 ) {
+          return `BTC & ${this.assetSelected}  <br /> had the same performance as BTC`
         } else {
-          return `BTC & ${this.assetSelected} had the same performance as BTC`
+          return ``
         }
     },
 
@@ -282,7 +306,7 @@ export default {
 
       // compound compouted property that allows watching when the user has entered all the info
       // so we can then calculate the outcome
-      return this.assetSelected + this.timeframeselected
+      return this.assetSelected + ' ' + this.timeframeselected
 
     },
 
@@ -300,7 +324,6 @@ export default {
               } else {
                 return ""
               }
-
 
           },
 
@@ -320,7 +343,6 @@ export default {
            }
       },
 
-
       rektLevel(){
 
          if( this.valueObject.btc > this.valueObject.asset ){
@@ -332,11 +354,7 @@ export default {
            return {width:0 + '%'};
          }
 
-
       },
-
-
-
 
   },
 
@@ -344,68 +362,56 @@ export default {
 
       toWatchforOutcome(){
 
-        console.log('watch is called')
+        var ticker = this.valueObject.btc - this.valueObject.asset > 0 ? document.querySelector('#btc-ticker') : document.querySelector('#asset-ticker')
 
-        // check if user has seleted asset & timeframe
-
-          this.outcome = this.$options.filters.dec(this.percentages["BTC"][this.timeframeselected] - this.percentages[this.assetSelected][this.timeframeselected])
-
-
+        this.outcome = this.$options.filters.dec(this.percentages["BTC"][this.timeframeselected] - this.percentages[this.assetSelected][this.timeframeselected])
 
       }
   },
 
-
-
-
   created(){
-
-
 
     axios.get('https://howrektapi.herokuapp.com/',  { crossdomain: true })
       .then((res)=>{
-          console.log(res)
+
+          this.assetSelectedPrice = res.data
+
+          this.$store.commit('setAssetPrices', res.data)
+
+          var result = {}
+
+            var pricesArr =  Object.values(this.assetSelectedPrice)
+
+            var keyAssets = Object.keys(this.assetSelectedPrice)
+
+              var asset;
+
+
+            pricesArr.forEach((asset, index, arr)=>{
+
+                  result[keyAssets[index]] ={}
+
+
+                  let timeframes = Object.values(asset)
+
+                  let keyTimeframes = Object.keys(asset)
+
+                  timeframes.forEach((timef, ind, arrIn)=>{
+
+                      result[keyAssets[index]][keyTimeframes[ind]] = ((arrIn[0] -timef) / timef)  *100
+
+                  })
+            })
+
+              console.log({result})
+
+              this.percentages = result
       })
       .catch((err)=>{
         console.log(err)
       })
 
-        var result = {}
-
-
-          var pricesArr =  Object.values(this.assetSelectedPrice)
-
-          var keyAssets = Object.keys(this.assetSelectedPrice)
-
-            var asset;
-
-
-          pricesArr.forEach((asset, index, arr)=>{
-
-                result[keyAssets[index]] ={}
-
-
-                let timeframes = Object.values(asset)
-
-                let keyTimeframes = Object.keys(asset)
-              //  console.log(timeframes)
-
-
-                timeframes.forEach((timef, ind, arrIn)=>{
-
-                    result[keyAssets[index]][keyTimeframes[ind]] = ((arrIn[0] -timef) / timef)  *100
-
-
-
-                })
-          })
-
-            console.log({result})
-
-            this.percentages = result
-
-
-        }
+      }
 
   }
 </script>
@@ -427,12 +433,10 @@ export default {
 .drop-assets{
   display:inline-block;
   margin-right:10px;
-
 }
 
 .drop-time-frame{
   display:inline-block;
-
 }
 
 
@@ -440,15 +444,12 @@ export default {
   padding-left:35%;
   padding-top:50px;
   margin-bottom:30px;
-
 }
 
 .arrow{
-
   height:45px;
   width:35px;
   margin-left:5px;
-
 }
 
 .ticker{
@@ -464,5 +465,77 @@ export default {
   opacity: 0;
 }
 
+.transition-background{
+  padding: 20px 0px 20px 0px;
+  transition: background-color 2s;
+}
+
+.btcresult{
+  background-color:#87D37C;
+}
+
+.assetresult{
+  background-color:#87D37C;
+}
+
+.card-body{
+  padding:0px;
+}
+
+#outcomeMessage{
+  margin-top: 5%;
+}
+
+.posoutcome{
+  color:green;
+}
+.negoutcome{
+  color:red;
+}
+
+#donation-modal{
+  position:absolute;
+  width:80%;
+  z-index:2;
+  top:15%;
+  margin-left:10%;
+  margin-right:10%;
+  background-color: #CDC8C7;
+  padding: 20px 0px;
+}
+
+.main-bk{
+  transition: all 0.5s ease-out;
+}
+
+.blurclass{
+  opacity:0.4;
+  filter: blur(2px);
+}
+
+.closeButton{
+  margin-left:40%;
+  width:200px;
+}
+
+#donation-text{
+  color:black;
+  text-decoration:none;
+}
+
+#header-img{
+  background-image:url('https://i.postimg.cc/13CSDSWW/btcwallpaper.jpg');
+  background-position: center center;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.ticker{
+  margin: 0 10px 0 10px;
+}
+
+#qrcode{
+  margin-bottom:20px;
+}
 
 </style>
